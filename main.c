@@ -7,7 +7,10 @@
 int rowOut;
 char out[4] = {0x00,0x01,0x02,0x03};
 char checkBit[4] = {0x02,0x04,0x08,0x10};
-int keypad[4][4] = {{1,65,129,0},{193,257,321,0},{384,448,511,0},{0,0,0,0}};
+int keypad[4][4] = {{2222,4444,6666,0},
+                    {8888,11000,13222,0},
+                    {15444,19666,20000,0},
+                    {0,0,0,0}};
 
 int main(void)
 {
@@ -20,11 +23,10 @@ int main(void)
     P1IES |= 0x1E;              //Pins hi to lo edge triggering
     P1IFG &=~ 0xFF;             //clear the interrupt flagP1DIR |= 0x41;
     P1SEL |= 0x01;                            // P2.2 TA1.1 option
-    P1SEL2 &= ~0x01;                        // P2.2 TA1.1 option
-    TA1CCR0 = 512;                             // PWM Period
-    TA1CCTL1 = OUTMOD_6;                         // TA1CCR1 reset/set
-    TA1CTL = TASSEL_2 + MC_3;                  // SMCLK, up mode
-
+    CCR0 = 20000;                             // PWM Period
+    CCTL1 = OUTMOD_6;                         // TA1CCR1 reset/set
+    CCR1 = 100;
+    TA0CTL = TASSEL_2 + MC_3;                  // SMCLK, up mode
     __enable_interrupt();
     while(1)
     {
@@ -49,10 +51,10 @@ __interrupt void Port_1(void)
         poll = P1IN;
     }
     int inputValue;
-    char dutyStor;
+    int dutyStor;
     inputValue = checkInput();
     dutyStor = int2Duty(inputValue);
-    TA1CCR1 = dutyStor;
+    CCR1 = dutyStor;
     P1IFG &=~ checkBit[inputValue];
     __enable_interrupt();
 }
@@ -75,7 +77,7 @@ int int2Duty(int input)
      * it will not work in a scenerio where the int 2 char is needed
      */
     int numOut = 0;
-    char output;
+    int output;
     if(P2OUT & 0x01)
     {
         numOut |= 0x01;
