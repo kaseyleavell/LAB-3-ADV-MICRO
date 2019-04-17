@@ -31,6 +31,14 @@ int main(void)
     TA1CCR1 = 1;                               // TA1CCR1 PWM duty cycle
     TA1CTL = TASSEL_2 + MC_1;                  // SMCLK, up mode
 
+    P1DIR |= 0x80;
+    P1SEL |= 0x80;
+    P1SEL2 &=~ 0x80;
+    TA0CCR0 = 20000;
+    TA0CCTL0 = OUTMOD_7;
+    TA0CCR1 = 5000;
+    TA0CTL = TASSEL_2 + MC_1;
+
     P2DIR |= 0xFB;
     P1REN |= 0x1E;              //initialize pulling resistors
     P1OUT |= 0x1E;              //initialize resistors as pull up
