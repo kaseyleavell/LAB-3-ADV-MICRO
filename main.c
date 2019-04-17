@@ -1,4 +1,8 @@
-#include <msp430.h> 
+#include  <msp430g2553.h>
+
+
+
+#include <msp430.h>
 
 
 /**
@@ -11,28 +15,34 @@ int keypad[4][4] = {{2222,4444,6666,0},
                     {8888,11000,13222,0},
                     {15444,19666,20000,0},
                     {0,0,0,0}};
+int checkInput();
+int int2Duty(int input);
 
 int main(void)
 {
     WDTCTL = WDTPW | WDTHOLD;   // stop watchdog timer
-    P1DIR |= 0x01;                            // P2.2 output
-    P2DIR |= 0xFF;
+
+
+    P2DIR |= 0x04;                            // P2.2 output
+    P2SEL |= 0x04;                            // P2.2 TA1.1 option
+    P2SEL2 &= ~0x04;                        // P2.2 TA1.1 option
+    TA1CCR0 = 20000;                             // PWM Period
+    TA1CCTL1 = OUTMOD_7;                         // TA1CCR1 reset/set
+    TA1CCR1 = 1;                               // TA1CCR1 PWM duty cycle
+    TA1CTL = TASSEL_2 + MC_1;                  // SMCLK, up mode
+
+    P2DIR |= 0xFB;
     P1REN |= 0x1E;              //initialize pulling resistors
     P1OUT |= 0x1E;              //initialize resistors as pull up
     P1IE |=0x1E;                //set the interrupt to activate for
     P1IES |= 0x1E;              //Pins hi to lo edge triggering
     P1IFG &=~ 0xFF;             //clear the interrupt flagP1DIR |= 0x41;
-    P1SEL |= 0x01;                            // P2.2 TA1.1 option
-    CCR0 = 20000;                             // PWM Period
-    CCTL1 = OUTMOD_6;                         // TA1CCR1 reset/set
-    CCR1 = 100;
-    TA0CTL = TASSEL_2 + MC_3;                  // SMCLK, up mode
     __enable_interrupt();
     while(1)
     {
         for(rowOut = 0;rowOut < 4;rowOut++)
         {
-             P2OUT &=~ 0xFF;     //clear the P2.X outputs. This method will also momentarily check the first button again
+             P2OUT &=~ 0xFB;     //clear the P2.X outputs. This method will also momentarily check the first button again
              P2OUT |= out[rowOut];
              __delay_cycles(10000);
         }
@@ -54,7 +64,7 @@ __interrupt void Port_1(void)
     int dutyStor;
     inputValue = checkInput();
     dutyStor = int2Duty(inputValue);
-    CCR1 = dutyStor;
+    TA1CCR1 = dutyStor;
     P1IFG &=~ checkBit[inputValue];
     __enable_interrupt();
 }
@@ -88,3 +98,4 @@ int int2Duty(int input)
     output = keypad[numOut][input];
     return output;
 }
+
