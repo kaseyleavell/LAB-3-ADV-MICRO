@@ -1,7 +1,3 @@
-#include  <msp430g2553.h>
-
-
-
 #include <msp430.h>
 
 
@@ -31,12 +27,12 @@ int main(void)
     TA1CCR1 = 1;                               // TA1CCR1 PWM duty cycle
     TA1CTL = TASSEL_2 + MC_1;                  // SMCLK, up mode
 
-    P1DIR |= 0x80;
-    P1SEL |= 0x80;
-    P1SEL2 &=~ 0x80;
+    P1DIR |= 0x40;
+    P1SEL |= 0x40;
+    P1SEL2 &=~ 0x40;
     TA0CCR0 = 20000;
-    TA0CCTL0 = OUTMOD_7;
-    TA0CCR1 = 5000;
+    TA0CCTL1 = OUTMOD_7;
+    TA0CCR1 = 500;
     TA0CTL = TASSEL_2 + MC_1;
 
     P2DIR |= 0xFB;
@@ -106,4 +102,3 @@ int int2Duty(int input)
     output = keypad[numOut][input];
     return output;
 }
-
