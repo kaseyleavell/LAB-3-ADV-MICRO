@@ -7,7 +7,7 @@
 int rowOut;
 char out[4] = {0x00,0x01,0x02,0x03};
 char checkBit[4] = {0x02,0x04,0x08,0x10};
-int keypad[4][4] = {{2222,4444,6666,0},
+int keypad[4][4] = {{1000,1500,2000,0},
                     {8888,11000,13222,0},
                     {15444,19666,20000,0},
                     {0,0,0,0}};
@@ -30,9 +30,9 @@ int main(void)
     P1DIR |= 0x40;
     P1SEL |= 0x40;
     P1SEL2 &=~ 0x40;
-    TA0CCR0 = 20000;
+    TA0CCR0 = 18800;
     TA0CCTL1 = OUTMOD_7;
-    TA0CCR1 = 500;
+    TA0CCR1 = 1500;
     TA0CTL = TASSEL_2 + MC_1;
 
     P2DIR |= 0xFB;
@@ -68,7 +68,16 @@ __interrupt void Port_1(void)
     int dutyStor;
     inputValue = checkInput();
     dutyStor = int2Duty(inputValue);
-    TA1CCR1 = dutyStor;
+    if(inputValue == 0)
+    {
+    	TA1CCR0 = dutyStor;		//for the left rotational servo
+    }else if(dutyStor == 1)
+    {
+    	TA1CCR1 = dutyStor;		//right rotational servo
+    }else if(dutyStor == 2)
+    {
+    	TA0CCR0 = dutyStor;		//position servo
+    }
     P1IFG &=~ checkBit[inputValue];
     __enable_interrupt();
 }
