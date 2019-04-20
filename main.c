@@ -7,9 +7,9 @@
 int rowOut;
 char out[4] = {0x00,0x01,0x02,0x03};
 char checkBit[4] = {0x02,0x04,0x08,0x10};
-int keypad[4][4] = {{1000,1500,1000,0},
-                    {8888,11000,1600,0},
-                    {15444,19666,2000,0},
+int keypad[4][4] = {{1000,1000,1000,0},
+                    {1550,1500,1550,0},
+                    {2000,2000,2000,0},
                     {0,0,0,0}};
 int checkInput();
 int int2Duty(int input);
@@ -19,21 +19,22 @@ int main(void)
     WDTCTL = WDTPW | WDTHOLD;   // stop watchdog timer
 
 
-    P2DIR |= 0x04;                            // P2.2 output
-    P2SEL |= 0x04;                            // P2.2 TA1.1 option
-    P2SEL2 &= ~0x04;                        // P2.2 TA1.1 option
-    TA1CCR0 = 20000;                             // PWM Period
-    TA1CCTL1 = OUTMOD_7;                         // TA1CCR1 reset/set
-    TA1CCR1 = 1;                               // TA1CCR1 PWM duty cycle
-    TA1CTL = TASSEL_2 + MC_1;                  // SMCLK, up mode
+    P1DIR |= 0x40;                            // P2.2 output
+    P1SEL |= 0x40;                            // P2.2 TA1.1 option
+    P1SEL2 &= ~0x40;                        // P2.2 TA1.1 option
+    TA0CCR0 = 20000;                             // PWM Period
+    TA0CCTL1 = OUTMOD_7;                         // TA1CCR1 reset/set
+    TA0CCR1 = 1500;                               // TA1CCR1 PWM duty cycle
+    TA0CTL = TASSEL_2 + MC_1;                  // SMCLK, up mode
 
-    P1DIR |= 0x40;
-    P1SEL |= 0x40;
-    P1SEL2 &=~ 0x40;
-    TA0CCR0 = 18800;
-    TA0CCTL1 = OUTMOD_7;
-    TA0CCR1 = 1500;
-    TA0CTL = TASSEL_2 + MC_1;
+    P2DIR |= 0x14;
+    P2SEL |= 0x14;
+    P2SEL2 &=~ 0x14;
+    TA1CCR0 = 18800;
+    TA1CCTL1 = OUTMOD_7;
+    TA1CCR1 = 1500;
+    TA1CCR2 = 1500;
+    TA1CTL = TASSEL_2 + MC_1;
 
     P2DIR |= 0xFB;
     P1REN |= 0x1E;              //initialize pulling resistors
@@ -70,13 +71,13 @@ __interrupt void Port_1(void)
     dutyStor = int2Duty(inputValue);
     if(inputValue == 0)
     {
-    	TA1CCR2 = dutyStor;		//for the left rotational servo
+        TA1CCR2 = dutyStor;     //for the left rotational servo
     }else if(inputValue == 1)
     {
-    	TA1CCR1 = dutyStor;		//right rotational servo
+        TA0CCR1 = dutyStor;     //right rotational servo
     }else if(inputValue == 2)
     {
-    	TA0CCR1 = dutyStor;		//position servo
+        TA1CCR1 = dutyStor;     //position servo
     }
     P1IFG &=~ checkBit[inputValue];
     __enable_interrupt();
